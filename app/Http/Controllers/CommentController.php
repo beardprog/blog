@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Comment;
+use App\CommentLike;
+use App\Mail\CommentWasLikedMail;
 use App\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+
 
 class CommentController extends Controller
 {
@@ -26,7 +30,7 @@ class CommentController extends Controller
      */
     public function create(Post $post, Comment $comment)
     {
-        return view('comments.create', compact('post', 'comment'));
+        return view('comments.create', compact('post','comment'));
     }
 
     /**
@@ -38,25 +42,55 @@ class CommentController extends Controller
     public function store(Request $request, Post $post)
     {
         $request->validate([
-            'post_id'=> 'nullable|integer',
-            'comment_id'=> 'nullable|integer',
-            'comment'=> 'required|string'
+            'post_id'=>'nullable|integer',
+            'comment_id'=>'nullable|integer',
+            'comment'=>'required|string'
         ]);
+
         $comment = Comment::create([
             'post_id'=>$post->id,
             'user_id'=>auth()->user()->id,
             'text'=>$request->comment,
-            'parent'=> $request->comment_id ? $request->comment_id : 0,
+            'parent'=>$request->comment_id ? $request->comment_id : 0,
             'published'=>'1'
         ]);
-        if ($comment){
+
+        if($comment){
             Session::flash('success',__('Comment saved'));
         }else{
-            Session::flash('danger',__('Ooooops....Comment was not saved.'));
+            Session::flash('danger',__('Oooops....Comment was not saved.'));
         }
-        if ($request->comment_id){
-            return redirect('/posts/'. $post->id);
+        if($request->comment_id){
+            return redirect('/posts/' . $post->id);
         }
+        return redirect()->back();
+    }
+
+    public function like(Comment $comment){
+        $like = CommentLike::firstOrCreate([
+            'comment_id'=>$comment->id,
+            'user_id'=>auth()->user()->id
+        ]);
+
+        if($like){
+            $this->notify_post_owner($comment);
+
+            return redirect()->back();
+        }
+    }
+
+    private function notify_post_owner(Comment $comment){
+        $post_name = $comment->post->title;
+        $post_owner = $comment->post->author->name;
+        $post_liker = auth()->user()->name;
+
+        Mail::to($comment->post->author->email)->send(new CommentWasLikedMail($post_name, $post_owner, $post_liker));
+    }
+
+    public function unlike(Comment $comment){
+        $like = $comment->likes()->where('user_id', auth()->user()->id)->first();
+        $like->delete();
+
         return redirect()->back();
     }
 

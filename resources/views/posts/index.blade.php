@@ -20,6 +20,16 @@
                                 <p>{{$post->preview}}</p>
                                 <p><strong>{{__('Author ')}}</strong>: {{$post->author->name}}</p>
                                 <p><strong>{{__('Created ')}}</strong>: {{$post->created_at->diffForHumans()}}</p>
+                                <ul class="list-unstyled list-inline">
+                                    @foreach($post->categories as $category)
+                                        <li class="list-inline-item">
+                                            <a href="/category/{{ $category->slug }}">
+                                                <span class="badge badge-primary">{{ $category->name }}</span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+
                             </div>
 
 

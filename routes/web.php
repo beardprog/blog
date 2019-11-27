@@ -20,10 +20,18 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::resource('/posts', 'PostController');
-Route::post('/comments/{post}', 'CommentController@store');
+Route::group(['prefix'=>'comments'], function(){
+    Route::get('{comment}/like','CommentController@like');
+    Route::get('{comment}/unlike','CommentController@unlike');
+    Route::post('{post}','CommentController@store');
+    Route::get('{post}/parent/{comment}','CommentController@create');
+});
+
+
+Route::get('/category/{category}', 'CategoryController@index');
 
 Route::get('comments/{post}/parent/{comment}', 'CommentController@create');
-
+Route::get('/user/favorites','UserController@favorites')->middleware('auth')->name('users.favorites');
 
 //Route::get('/posts', 'PostController@index')->name('post.index');;
 //Route::get('/posts/create', 'PostController@create')->name('posts.create');

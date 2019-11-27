@@ -20,6 +20,10 @@ class Post extends Model
         return $this->hasMany(Comment::class)->where('parent', 0);
     }
 
+    public function categories(){
+        return $this->belongsToMany(Category::class);
+    }
+
     public function getPreviewAttribute(){
         return Str::limit($this->content, 150);
     }

@@ -5,6 +5,16 @@
         <div class="row">
             <div class="col-12">
                 <h1>{{ $post->title }}</h1>
+                <ul class="list-unstyled list-inline">
+                    @foreach($post->categories as $category)
+                        <li class="list-inline-item">
+                            <a href="/category/{{ $category->slug }}">
+                                <span class="badge badge-primary">{{ $category->name }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+
                 <p>{{ $post->content }}</p>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>{{ __('Author') }}: {{ $post->author->name }}</div>
@@ -20,7 +30,12 @@
                             <sapn> {{ $comment->id }} {{ $comment->text }} {{ $comment->parent }} </sapn>
                             <sapn>
                                 <ul class="list-inline m-0">
-                                    <li class="list-inline-item">0 <a href="#"><i class="far fa-heart"></i></a></li>
+                                    @if($comment->commentWasLiked)
+                                        <li class="list-inline-item">{{ $comment->likes->count() }} <a href="/comments/{{ $comment->id }}/unlike" class="text-danger"><i class="fas fa-heart"></i></a></li>
+                                    @else
+                                        <li class="list-inline-item">{{ $comment->likes->count() }} <a href="/comments/{{ $comment->id }}/like" class="text-danger"><i class="far fa-heart"></i></a></li>
+                                    @endif
+
                                     <li class="list-inline-item"><a href="/comments/{{ $post->id }}/parent/{{ $comment->id }}">{{__('Comment')}}</a></li>
 
                                 </ul>
@@ -34,7 +49,11 @@
                                   <span>{{ $child->text }} {{ $child->parent }}</span>
                                   <sapn>
                                       <ul class="list-inline m-0">
-                                          <li class="list-inline-item">0 <a href="#"><i class="far fa-heart"></i></a></li>
+                                          @if($child->commentWasLiked)
+                                              <li class="list-inline-item">{{ $child->likes->count() }} <a href="/comments/{{ $child->id }}/unlike" class="text-danger"><i class="fas fa-heart"></i></a></li>
+                                          @else
+                                              <li class="list-inline-item">{{ $child->likes->count() }} <a href="/comments/{{ $child->id }}/like" class="text-danger"><i class="far fa-heart"></i></a></li>
+                                          @endif
 
 
                                       </ul>
